@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Upload d'image de chien</title>
+        <style>
+            .drop-zone {
+                border: 2px dashed #aaa;
+                padding: 50px;
+                text-align: center;
+                cursor: pointer;
+                color: #888;
+                position: relative;
+            }
+
+            .drop-zone.dragover {
+                background-color: #f0f0f0;
+                border-color: #333;
+                color: #000;
+            }
+
+            .drop-zone img {
+                max-width: 100%;
+                max-height: 200px;
+                margin-top: 10px;
+                border: 1px solid #ccc;
+            }
+
+            input[type="file"] {
+                display: none;
+            }
+
+            .buttons {
+                margin-top: 20px;
+            }
+
+            button {
+                margin-right: 10px;
+            }
+        </style>
+    </head>
+    <body>
+        <h2>Upload une image de chien</h2>
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="drop-zone" id="drop-zone">
+                {% if uploaded %}
+                    <img src="{{ image_url }}" alt="Image uploadée" />
+                {% else %}
+                    Glisse ton image ici ou clique pour parcourir
+                    <img id="preview-img" style="display:none;max-width:100%;max-height:200px;margin-top:10px;border:1px solid #ccc;" />
+                {% endif %}
+                <input
+                    type="file"
+                    name="image"
+                    id="file-input"
+                    accept="image/*"
+                />
+            </div>
+
+            <div class="buttons">
+                <button type="submit">Analyser</button>
+                {% if uploaded %}
+                <button
+                    type="button"
+                    onclick="window.location.href=window.location.href"
+                >
+                    Reset
+                </button>
+                {% endif %}
+            </div>
+        </form>
+
+        {% if uploaded %}
+        <hr />
+        <h3>Résultat de l'analyse :</h3>
+        <p><strong>Race détectée :</strong> {{ breed }}</p>
+        {% endif %}
+
+        <script>
+            const uploaded = "{{ uploaded|yesno:'true,false' }}" === "true";
+
+            const dropZone = document.getElementById("drop-zone");
+            const fileInput = document.getElementById("file-input");
+            const previewImg = document.getElementById("preview-img");
+
+            dropZone.addEventListener("click", () => {
+                if (!uploaded) {
+                    fileInput.click();
+                }
+            });
+
+            dropZone.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                if (!uploaded) {
+                    dropZone.classList.add("dragover");
+                }
+            });
+
+            dropZone.addEventListener("dragleave", () => {
+                dropZone.classList.remove("dragover");
+            });
+
+            dropZone.addEventListener("drop", (e) => {
+                e.preventDefault();
+                dropZone.classList.remove("dragover");
+                if (!uploaded) {
+                    if (e.dataTransfer.files.length) {
+                        fileInput.files = e.dataTransfer.files;
+                    }
+                }
+            });
+
+            fileInput.addEventListener("change", () => {
+                if (fileInput.files.length) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        previewImg.src = e.target.result;
+                        previewImg.style.display = "block";
+                    };
+                    reader.readAsDataURL(fileInput.files[0]);
+                }
+            });
+        </script>
+    </body>
+</html>
