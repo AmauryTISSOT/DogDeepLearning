@@ -4,11 +4,11 @@
         <title>Upload d'image de chien</title>
         <style>
             .drop-zone {
-                border: 2px dashed #aaa;
+                border: 2px dashed rgb(48, 111, 162);
                 padding: 50px;
                 text-align: center;
                 cursor: pointer;
-                color: #888;
+                color: rgb(48, 111, 162);
                 position: relative;
                 display: flex;
                 flex-direction: column;
@@ -16,7 +16,7 @@
 
             .drop-zone.dragover {
                 background-color: #f0f0f0;
-                border-color: #333;
+                border-color: rgb(48, 111, 162);
                 color: #000;
             }
 
@@ -24,7 +24,7 @@
                 max-width: 100%;
                 max-height: 200px;
                 margin-top: 10px;
-                border: 1px solid #ccc;
+                border: 1px solid rgb(48, 111, 162);
             }
 
             input[type="file"] {
@@ -32,7 +32,10 @@
             }
 
             .buttons {
-                margin-top: 20px;
+                margin-top: 10px;
+                width: 100%;
+                display: flex;
+                justify-content: space-between;
             }
 
             button {
@@ -42,7 +45,7 @@
             .container-img {
                 display: flex;
                 gap: 50px;
-                margin-top: 100px;
+                margin-top: 50px;
                 margin-bottom: 50px;
                 justify-content: center;
                 align-items: center;
@@ -52,13 +55,37 @@
                 display: flex;
                 flex-direction: column;
                 align-items: center;
+                font-family: Jost, sans-serif;
+            }
+
+            .blue-font {
+                color: rgb(48, 111, 162);
+            }
+
+            .form-container {
+                display: flex;
+                gap: 25px;
+                align-items: start;
+                width: 830px;
+            }
+            h3 {
+                margin-top: 0;
             }
         </style>
     </head>
     <body>
         <div class="container-img">
-            <h1 style="width: 400px">
-                Identifier votre race de chien grace à l'IA
+            <h1
+                style="
+                    width: 400px;
+                    font-size: 35px;
+                    font-weight: 600;
+                    line-height: 60px;
+                    text-align: left;
+                "
+            >
+                <span class="blue-font">Identifier votre race de chien</span>
+                grace à l'IA
             </h1>
             {% load static %}
             <img
@@ -66,51 +93,52 @@
                 src="{% static 'dogs_breed_in_parc.png' %}"
             />
         </div>
-        <h2>Upload une image de chien</h2>
+        <div class="form-container">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="drop-zone" id="drop-zone">
+                    {% if uploaded %}
+                    <img src="{{ image_url }}" alt="Image uploadée" />
+                    {% else %} Glisse ton image ici ou clique pour parcourir
+                    <img
+                        id="preview-img"
+                        style="
+                            display: none;
+                            max-width: 100%;
+                            max-height: 200px;
+                            margin-top: 10px;
+                            border: 1px solid #ccc;
+                        "
+                    />
+                    {% endif %}
+                    <input
+                        type="file"
+                        name="image"
+                        id="file-input"
+                        accept="image/*"
+                    />
+                </div>
 
-        <form method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="drop-zone" id="drop-zone">
+                <div class="buttons">
+                    <button type="submit">Analyser</button>
+                    {% if uploaded %}
+                    <button
+                        type="button"
+                        onclick="window.location.href=window.location.href"
+                    >
+                        Reset
+                    </button>
+                    {% endif %}
+                </div>
+            </form>
+
+            <div>
+                <h3>Résultat de l'analyse :</h3>
                 {% if uploaded %}
-                <img src="{{ image_url }}" alt="Image uploadée" />
-                {% else %} Glisse ton image ici ou clique pour parcourir
-                <img
-                    id="preview-img"
-                    style="
-                        display: none;
-                        max-width: 100%;
-                        max-height: 200px;
-                        margin-top: 10px;
-                        border: 1px solid #ccc;
-                    "
-                />
-                {% endif %}
-                <input
-                    type="file"
-                    name="image"
-                    id="file-input"
-                    accept="image/*"
-                />
-            </div>
-
-            <div class="buttons">
-                <button type="submit">Analyser</button>
-                {% if uploaded %}
-                <button
-                    type="button"
-                    onclick="window.location.href=window.location.href"
-                >
-                    Reset
-                </button>
+                <h2><strong>{{breed}}</strong></h2>
                 {% endif %}
             </div>
-        </form>
-
-        {% if uploaded %}
-        <hr />
-        <h3>Résultat de l'analyse :</h3>
-        <p><strong>Race détectée :</strong> {{ breed }}</p>
-        {% endif %}
+        </div>
 
         <script>
             const uploaded = "{{ uploaded|yesno:'true,false' }}" === "true";
